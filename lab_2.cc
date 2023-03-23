@@ -49,7 +49,7 @@ int main() {
 
   std::cout << "Start\n";
   // std::ofstream FS = integrator(t0, tmax, dt, gain);
-  // std::ofstream FS = ClassIntegrator(aboba, t0, tmax, dt);
+  std::ofstream FS = ClassIntegrator(aboba, t0, tmax, dt);
   aboba.PrintIntegrator();
   std::cout << "end of the prog\n";
 
