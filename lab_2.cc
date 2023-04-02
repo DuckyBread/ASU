@@ -2,15 +2,15 @@
 #include <iostream>
 #include <string>
 
-class Integrator {
+class TIntegrator {
  public:
-  Integrator() = default;
-  Integrator(float newValue, float newScale, float newMin, float newMax)
-      : value_(newValue), scale_(newScale), MIN_(newMin), MAX_(newMax) {}
-  ~Integrator() {}
-  Integrator(const Integrator& i)
+  TIntegrator() = default;
+  TIntegrator(float newScale, float newMin, float newMax)
+      : scale_(newScale), MIN_(newMin), MAX_(newMax) {}
+  ~TIntegrator() {}
+  TIntegrator(const TIntegrator& i)
       : value_(i.value_), scale_(i.scale_), MIN_(i.MIN_), MAX_(i.MAX_) {}
-  Integrator(Integrator&&) = delete;
+  TIntegrator(TIntegrator&&) = delete;
 
   void SetValue(float value) { value_ = value; }
   void SetScale(float scale) { scale_ = scale; }
@@ -22,7 +22,13 @@ class Integrator {
   float GetMin() { return MIN_; }
   float GetMax() { return MAX_; }
 
-  std::ofstream ClassIntegrator(float time_start, float time_end, float dt) {
+  float Proc(float dt, float u) {
+    SetValue(GetValue() + GetScale() * u * dt);
+    (GetValue() > GetMax()) ? (SetValue(GetMax())) : ((GetValue() < GetMin()) ? (SetValue(GetMin())) : 1);
+    return GetValue();
+  }
+
+  std::ofstream ClassIntegrator(float dt, float u) {
     std::string file_name;
     std::cout << "Enter file name:\n";
     std::cin >> file_name;
@@ -39,17 +45,52 @@ class Integrator {
     return FS;
   }
 
-  void ResetIntegrator() {
-    value_ = MIN_ = MAX_ = 0;
-    scale_ = 1;
-  }
+  void ResetIntegrator(): value_(0) {}
   void PrintIntegrator() {
-    std::cout << "Value:\t" << value_ << "\nScale:\t" << scale_ << "\nMin:\t"
-              << MIN_ << "\nMax:\t" << MAX_ << std::endl;
+    std::cout << "Value:\t" << GetValue() << "\nScale:\t" << GetScale() << "\nMin:\t"
+              << GetMin() << "\nMax:\t" << GetMax() << std::endl;
   }
 
  private:
-  float value_ = 0, scale_ = 1, MIN_ = 0, MAX_ = 0;
+  float value_ = MIN_ = MAX_ = 0,scale_ = 1;
+};
+
+class TDerivative {
+ public:
+  TDerivative() = default;
+  TDerivative(float newScale, float newMin, float newMax)
+      : scale_(newScale), MIN_(newMin), MAX_(newMax) {}
+  ~TDerivative() {}
+  TDerivative(const TIntegrator& i)
+      : value_(i.value_), scale_(i.scale_), MIN_(i.MIN_), MAX_(i.MAX_), prevU_(i.prevU_) {}
+  TDerivative(TIntegrator&&) = delete;
+
+  void SetValue(float value) { value_ = value; }
+  void SetScale(float scale) { scale_ = scale; }
+  void SetMin(float min) { MIN_ = min; }
+  void SetMax(float max) { MAX_ = max; }
+  void SetPrevU(float prev) { prevU_ = prev; }
+
+  float GetValue() { return value_; }
+  float GetScale() { return scale_; }
+  float GetMin() { return MIN_; }
+  float GetMax() { return MAX_; }
+  float GetPrevU() { return prevU_; }
+
+  float Proc(float dt, float u) {
+    SetValue(GetScale() * (u - GetPrevU())  / dt);
+    SetPrevU(u);
+    return GetValue();
+  }
+
+  void ResetTDerivative(): value_(0), prevU_(0) {}
+  void PrintTDerivative() {
+    std::cout << "Value:\t" << GetValue() << "\nScale:\t" << GetScale() << "\nMin:\t"
+              << GetMin() << "\nMax:\t" << GetMax() << "\nPrev_u:\t" << GetPrevU() << std::endl;
+  }
+
+ private:
+  float value_ = MIN_ = MAX_ = 0, scale_ = 1, prevU_ = 0;
 };
 
 std::ofstream integrator(float time_start, float time_end, float dt,
